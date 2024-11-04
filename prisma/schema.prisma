@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id            Int                      @id @default(autoincrement())
+  name               String
+  email              String                   @unique
+  password           String
+  created_at         DateTime                 @default(now())
+  updated_at         DateTime                 @updatedAt
+  cargos             UserCargo[]
+  eventosOrganizados Evento[]                 @relation("EventosOrganizados")
+  eventosConfirmados EventoUsersConfirmados[]
+}
+
+model Cargo {
+  cargo_id   Int         @id @default(autoincrement())
+  cargo_nome String      @unique
+  users      UserCargo[]
+}
+
+model UserCargo {
+  user_id  Int
+  cargo_id Int
+
+  user  User  @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  cargo Cargo @relation(fields: [cargo_id], references: [cargo_id], onDelete: Cascade)
+
+  @@id([user_id, cargo_id])
+}
+
+model TipoEvento {
+  tipo_evento_id Int      @id @default(autoincrement())
+  descricao      String   @unique
+  eventos        Evento[]
+}
+
+model Evento {
+  evento_id      Int      @id @default(autoincrement())
+  data_do_evento DateTime
+  local          String
+  tipo_evento_id Int
+  organizador_id Int?
+
+  organizador         User?                    @relation("EventosOrganizados", fields: [organizador_id], references: [user_id], onDelete: SetNull)
+  tipo_evento         TipoEvento               @relation(fields: [tipo_evento_id], references: [tipo_evento_id], onDelete: Restrict)
+  usuariosConfirmados EventoUsersConfirmados[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model EventoUsersConfirmados {
+  evento_id Int
+  user_id   Int
+
+  evento Evento @relation(fields: [evento_id], references: [evento_id], onDelete: Cascade)
+  user   User   @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@id([evento_id, user_id])
+}
