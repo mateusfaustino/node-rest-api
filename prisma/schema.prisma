@@ -9,12 +9,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  user_id            Int                      @id @default(autoincrement())
+  user_id            String                      @id @default(uuid())
   name               String
   email              String                   @unique
   password           String
@@ -32,7 +32,7 @@ model Cargo {
 }
 
 model UserCargo {
-  user_id  Int
+  user_id  String
   cargo_id Int
 
   user  User  @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
@@ -52,7 +52,7 @@ model Evento {
   data_do_evento DateTime
   local          String
   tipo_evento_id Int
-  organizador_id Int?
+  organizador_id String?
 
   organizador         User?                    @relation("EventosOrganizados", fields: [organizador_id], references: [user_id], onDelete: SetNull)
   tipo_evento         TipoEvento               @relation(fields: [tipo_evento_id], references: [tipo_evento_id], onDelete: Restrict)
@@ -64,7 +64,7 @@ model Evento {
 
 model EventoUsersConfirmados {
   evento_id Int
-  user_id   Int
+  user_id   String
 
   evento Evento @relation(fields: [evento_id], references: [evento_id], onDelete: Cascade)
   user   User   @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
